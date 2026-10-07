@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  release-please:
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  docker:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      # The Dockerfile ARGs are the single source of truth for the
+      # <pg major>-<postgis minor> tag.
+      - name: Read image versions
+        id: versions
+        run: |
+          pg_major="$(sed -n 's/^ARG PG_MAJOR=//p' Dockerfile)"
+          postgis="$(sed -n 's/^ARG POSTGIS_VERSION=//p' Dockerfile)"
+          if [ -z "$pg_major" ] || [ -z "$postgis" ]; then
+            echo "::error::Could not read PG_MAJOR / POSTGIS_VERSION from the Dockerfile"
+            exit 1
+          fi
+          echo "pg_major=$pg_major" >> "$GITHUB_OUTPUT"
+          echo "postgis=$postgis" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        # Builder state is removed at job end; no remote cache is exported.
+        with:
+          cache-binary: false
+          keep-state: false
+          cleanup: true
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        env:
+          # Build records are persistent Actions artifacts.
+          DOCKER_BUILD_RECORD_UPLOAD: 'false'
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: rawback-db:release
+
+      # Nothing is pushed unless the exact layers about to be published pass.
+      - name: Smoke test
+        run: test/smoke.sh rawback-db:release
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ghcr.io/rawback-app/db
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.release-please.outputs.tag_name }}
+            type=raw,value=${{ steps.versions.outputs.pg_major }}-${{ steps.versions.outputs.postgis }}
+            type=raw,value=${{ steps.versions.outputs.pg_major }}
+            type=raw,value=latest
+
+      # Same builder, same context: every layer comes from the cache of the
+      # build the smoke test ran against, so this pushes what was tested.
+      - name: Build and push Docker image to GHCR
+        uses: docker/build-push-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: 'false'
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
