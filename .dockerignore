@@ -1,0 +1,6 @@
+# Only Dockerfile, initdb/ and scripts/ reach the image.
+.git
+.github
+test
+Makefile
+*.md
