@@ -49,7 +49,15 @@ if [ -z "${ready:-}" ]; then
 fi
 
 "${psql[@]}" -q <"$here/smoke.sql"
-"$docker" exec "$name" pg_isready -q -h 127.0.0.1
+# The Dockerfile's HEALTHCHECK, verbatim. pg_isready exits 0 even when the
+# server rejects its role, so also make sure the probe left no FATAL behind.
+# The single quotes are deliberate: POSTGRES_USER expands in the container.
+# shellcheck disable=SC2016
+"$docker" exec "$name" sh -c 'pg_isready -q -h 127.0.0.1 -U "${POSTGRES_USER:-postgres}" -d postgres'
+if "$docker" logs "$name" 2>&1 | grep -E 'FATAL: +(role|database) .* does not exist'; then
+    echo "the health check makes the server log a FATAL on every probe" >&2
+    exit 1
+fi
 "$docker" exec -u postgres "$name" update-extensions.sh
 
 versions="$("${psql[@]}" -qAt -F ' | ' <<'SQL'
