@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/rawback-app/db/compare/v1.0.0...v1.0.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* **image:** name the role and database in the health check ([0d2db28](https://github.com/rawback-app/db/commit/0d2db282ed62957752965a0ac071eab6e077eeeb))
+* **image:** name the role and database in the health check ([b2ba973](https://github.com/rawback-app/db/commit/b2ba9737317fb7dc1f1600903df3fec72127827e))
+
 ## 1.0.0 (2026-10-07)
 
 
