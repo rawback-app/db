@@ -56,5 +56,9 @@ COPY --chmod=755 scripts/update-extensions.sh /usr/local/bin/update-extensions.s
 
 # TCP on purpose: during first-start initialisation the entrypoint runs a
 # socket-only server, so this stays unhealthy until the real one is up.
+# -U and -d because pg_isready otherwise connects as the OS user (root) to a
+# database of the same name: it still reports healthy, but the server logs
+# `FATAL: role "root" does not exist` on every probe. Shell form, so
+# POSTGRES_USER expands inside the container. test/smoke.sh runs the same line.
 HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=5 \
-    CMD ["pg_isready", "-q", "-h", "127.0.0.1"]
+    CMD pg_isready -q -h 127.0.0.1 -U "${POSTGRES_USER:-postgres}" -d postgres

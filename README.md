@@ -74,8 +74,11 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
-The image ships a `HEALTHCHECK` (`pg_isready -h 127.0.0.1`). It turns healthy only once the real
-server is listening on TCP, not while the first-start initialisation is still running.
+The image ships a `HEALTHCHECK`
+(`pg_isready -h 127.0.0.1 -U "${POSTGRES_USER:-postgres}" -d postgres`). It turns healthy only once
+the real server is listening on TCP, not while the first-start initialisation is still running. It
+names the role and database so that probes don't fill the server log with
+`FATAL: role "root" does not exist`.
 
 Every variable and behaviour of the official `postgres` image applies unchanged, including
 `POSTGRES_USER`, `POSTGRES_INITDB_ARGS` and extra scripts in `/docker-entrypoint-initdb.d`. Name your

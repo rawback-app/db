@@ -60,6 +60,10 @@ test/smoke.sh <image>       # smoke-test any image, e.g. one pulled from GHCR
 - **The health check is TCP on purpose** (`pg_isready -h 127.0.0.1`). During first start the
   entrypoint runs a socket-only server, and the smoke test relies on the same distinction to wait for
   the real one.
+- **The health check names its role and database** (`-U "${POSTGRES_USER:-postgres}" -d postgres`,
+  shell form so the variable expands in the container). Without them pg_isready connects as root,
+  still reports healthy, and the server logs `FATAL: role "root" does not exist` every 10 s.
+  `test/smoke.sh` runs the same line and fails on that FATAL, so change both together.
 - **Release pushes what was tested.** The release job builds with `load: true`, smoke-tests that
   image, then runs build-push again on the same builder, so every layer comes from that build's
   cache. Don't add a step between them that changes the build context.
