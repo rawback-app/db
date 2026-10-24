@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/rawback-app/db/compare/v1.0.1...v1.0.2) (2026-10-24)
+
+
+### Bug Fixes
+
+* **deps:** bump PGroonga to 4.1 ([a1e4fbc](https://github.com/rawback-app/db/commit/a1e4fbc655bfc77b4d5b0feb67b424b964bb0e6b))
+* **deps:** bump PGroonga to 4.1 ([3c04b06](https://github.com/rawback-app/db/commit/3c04b065dc78730f2be89d38bfa9ec94f11b2a7b))
+
 ## [1.0.1](https://github.com/rawback-app/db/compare/v1.0.0...v1.0.1) (2026-10-24)
 
 
