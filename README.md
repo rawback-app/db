@@ -1,7 +1,7 @@
 # Rawback DB
 
 The PostgreSQL image that every Rawback service runs on. It is PostgreSQL 18 with PostGIS 3.6 and
-PGroonga 4.0 on Debian trixie, published as `ghcr.io/rawback-app/db`.
+PGroonga 4.1 on Debian trixie, published as `ghcr.io/rawback-app/db`.
 
 It is a drop-in replacement for `docker.io/postgis/postgis:18-3.6`. It shares that image's base image,
 data directory layout and `template_postgis`, and adds [PGroonga](https://pgroonga.github.io/) for
@@ -13,11 +13,11 @@ full-text search in Japanese, Chinese, Korean and every other language.
 | --- | --- | --- |
 | PostgreSQL | 18, newest 18.x at build time | the official [`postgres:18-trixie`](https://hub.docker.com/_/postgres) image |
 | PostGIS | 3.6.x (raster, topology and SFCGAL libraries included) | apt.postgresql.org, `postgresql-18-postgis-3` |
-| PGroonga | 4.0.x | packages.groonga.org, `postgresql-18-pgdg-pgroonga` |
+| PGroonga | 4.1.x | packages.groonga.org, `postgresql-18-pgdg-pgroonga` |
 | pg_trgm | bundled with PostgreSQL | contrib |
 
 The Dockerfile pins the minor versions and lets patch releases float, so every build takes the newest
-18.x, 3.6.x and 4.0.x. If apt resolves a different PostGIS or PGroonga minor, the build fails rather
+18.x, 3.6.x and 4.1.x. If apt resolves a different PostGIS or PGroonga minor, the build fails rather
 than ship it. Each release job's summary lists the exact versions that went into it.
 
 The image is built for `linux/amd64` only. Apple Silicon runs it under emulation.

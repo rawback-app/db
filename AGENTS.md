@@ -1,7 +1,7 @@
 # db — agent guide
 
 The house PostgreSQL image for Rawback, published as `ghcr.io/rawback-app/db`. It is PostgreSQL 18
-plus PostGIS 3.6 plus PGroonga 4.0 on Debian trixie, for `linux/amd64`. It is a drop-in replacement
+plus PostGIS 3.6 plus PGroonga 4.1 on Debian trixie, for `linux/amd64`. It is a drop-in replacement
 for `docker.io/postgis/postgis:18-3.6` (same base image, same `PGDATA`, same `template_postgis`), with
 PGroonga added.
 
