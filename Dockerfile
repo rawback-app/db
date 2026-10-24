@@ -15,7 +15,7 @@ FROM postgres:${PG_MAJOR}-trixie
 # POSTGIS_VERSION for the image tags.
 ARG POSTGIS_MAJOR=3
 ARG POSTGIS_VERSION=3.6
-ARG PGROONGA_VERSION=4.0
+ARG PGROONGA_VERSION=4.1
 
 LABEL org.opencontainers.image.title="rawback-db" \
       org.opencontainers.image.description="PostgreSQL ${PG_MAJOR} with PostGIS ${POSTGIS_VERSION} and PGroonga ${PGROONGA_VERSION}" \
